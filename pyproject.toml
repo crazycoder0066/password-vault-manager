@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "password-vault-manager"
+version = "0.2.0"
+description = "A local encrypted password vault with a Django interface"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["cryptography>=46,<47", "Django>=5.2.8,<5.3"]
+
+[project.scripts]
+password-vault-manager = "password_vault_manager.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+password_vault_manager = ["static/*.html", "static/*.css", "static/*.js"]
