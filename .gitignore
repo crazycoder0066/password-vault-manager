@@ -1,13 +1,35 @@
+# Python environments and generated files
 .venv/
+venv/
 __pycache__/
 *.py[cod]
 *.egg-info/
 build/
 dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local configuration and vault data
 .env
+.env.*
+!.env.example
+!.env.sample
 data/
 *.vault
 *.vault.lock
 *.sqlite3
+*.sqlite3-journal
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Frontend dependencies and test output
 node_modules/
 frontend/coverage/
+
+# OS metadata
+.DS_Store
+Thumbs.db
