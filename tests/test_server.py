@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import tempfile
 import time
 import unittest
@@ -34,10 +35,30 @@ class ServerTests(unittest.TestCase):
 
     def test_health_and_static_page(self):
         self.assertEqual(self.client.get("/health").json()["status"], "ok")
-        for path in ("/", "/app.js", "/style.css"):
+        page = self.client.get("/")
+        self.assertContainsReactRoot(page)
+        assets = re.findall(r'(?:src|href)="(/assets/[^"\s]+)"', page.content.decode())
+        self.assertTrue(any(path.endswith('.js') for path in assets))
+        self.assertTrue(any(path.endswith('.css') for path in assets))
+        for path in ("/", *assets):
             response = self.client.get(path)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response["Cache-Control"], "no-store")
+            expected = 'text/javascript' if path.endswith('.js') else 'text/css' if path.endswith('.css') else 'text/html'
+            self.assertEqual(response['Content-Type'], expected + '; charset=utf-8')
+
+    def assertContainsReactRoot(self, response):
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<div id="root"></div>', response.content.decode())
+        self.assertIn('type="module"', response.content.decode())
+
+    def test_bundled_asset_not_found_and_method_validation(self):
+        for path in ('/assets/missing.js', '/assets/../views.py', '/assets/%2e%2e%2fviews.py',
+                     '/assets/index.html', '/assets/views.py'):
+            with self.subTest(path=path):
+                self.assertEqual(self.client.get(path).status_code, 404)
+        self.assertEqual(self.client.post('/').status_code, 405)
+        self.assertEqual(self.client.post('/assets/missing.js').status_code, 405)
 
     def test_lifecycle_and_session_isolation(self):
         self.assertEqual(self.post("entries").status_code, 401)

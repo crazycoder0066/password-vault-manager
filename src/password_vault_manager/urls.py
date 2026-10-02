@@ -3,8 +3,7 @@ from . import views
 
 urlpatterns = [
     path("", views.asset, {"name": "index.html"}),
-    path("app.js", views.asset, {"name": "app.js"}),
-    path("style.css", views.asset, {"name": "style.css"}),
+    path("assets/<str:name>", views.asset, {"bundled": True}),
     path("health", views.health),
     path("api/status", views.status),
     path("api/export", views.export_vault),

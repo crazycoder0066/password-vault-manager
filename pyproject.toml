@@ -17,4 +17,4 @@ password-vault-manager = "password_vault_manager.__main__:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-password_vault_manager = ["static/*.html", "static/*.css", "static/*.js"]
+password_vault_manager = ["static/*.html", "static/assets/*"]

@@ -1,6 +1,6 @@
 # Password vault manager
 
-A local Django browser app for storing passwords in an encrypted vault and manually rotating them. Requires Python 3.11+ on Linux or macOS.
+A local React browser app with a Django API for storing passwords in an encrypted vault and manually rotating them. Requires Python 3.11+ on Linux or macOS.
 
 ## Setup
 
@@ -16,7 +16,7 @@ Select `.venv/bin/python` as your IDE interpreter. Manage dependencies with `uv 
 uv run --locked password-vault-manager --port 8000
 ```
 
-Open http://127.0.0.1:8000. The Django development server listens on loopback only. `GET /health` provides a health check. The existing UI and `/api/` routes are served by Django. The Django admin, database, and session framework are not used; vault data remains in the encrypted file.
+Open http://127.0.0.1:8000. The Django development server listens on loopback only. `GET /health` provides a health check. Django serves the built React UI and `/api/` routes. The Django admin, database, and session framework are not used; vault data remains in the encrypted file.
 
 1. Create a vault with a master passphrase of at least 12 characters.
 2. Add an account name, username, website, password, and rotation interval. Use **Generate password** for a random 24-character password.
@@ -45,8 +45,33 @@ The vault directory must be owned by your OS user and private (mode `0700`), and
 
 This is a local app, not an audited password manager. Keep it on loopback. Secrets exist in process and browser memory while unlocked.
 
+## Frontend development
+
+React source lives in `frontend/src`. Vite builds the app into `src/password_vault_manager/static`; the built HTML and assets are checked in and included in the Python package, so running the app does not require Node.js or a CDN.
+
+To edit the frontend, install Node.js 24.15+ LTS or 22.22.2+ LTS, then:
+
+```sh
+cd frontend
+npm ci
+npm run dev
+```
+
+Keep the Django server running on port 8000 in a separate terminal and open http://127.0.0.1:5173 for hot reload. Vite listens on loopback and proxies API requests to Django. Use `127.0.0.1` consistently when switching between the two servers; session cookies are scoped to the hostname.
+
+To rebuild the UI served by Django, run `npm run build` from `frontend`. Commit the updated build together with source changes. For development using Django's normal security headers, run `npm run build:watch` and open http://127.0.0.1:8000 instead.
+
 ## Validate
 
 ```sh
 uv run --locked python -m unittest discover -s tests -v
+```
+
+Frontend workflow tests cover unlocking, saving, search, reveal expiry, rotation, master-password changes, encrypted import/export, and clearing secrets on manual or idle lock:
+
+```sh
+cd frontend
+npm ci
+npm test
+npm run build
 ```

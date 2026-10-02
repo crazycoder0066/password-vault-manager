@@ -9,3 +9,5 @@ data/
 *.vault
 *.vault.lock
 *.sqlite3
+node_modules/
+frontend/coverage/

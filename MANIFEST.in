@@ -1,0 +1,2 @@
+include frontend/package.json frontend/package-lock.json frontend/index.html frontend/vite.config.js
+recursive-include frontend/src *.js *.jsx *.css

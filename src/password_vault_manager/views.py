@@ -1,5 +1,6 @@
 """Django views preserving the browser app's JSON API."""
 import json
+import re
 import secrets
 import time
 from importlib.resources import files
@@ -15,11 +16,21 @@ def error(status, message):
     return JsonResponse({"error": message}, status=status)
 
 
-def asset(request, name):
+def asset(request, name, bundled=False):
     if request.method != "GET":
         return error(405, "Method not allowed")
-    content_type = {"index.html": "text/html", "app.js": "text/javascript", "style.css": "text/css"}[name]
-    body = files("password_vault_manager").joinpath("static", name).read_bytes()
+    if bundled:
+        if not re.fullmatch(r"[\w-]+\.(?:js|css)", name):
+            return error(404, "Asset not found")
+        content_type = "text/javascript" if name.endswith(".js") else "text/css"
+        resource = files("password_vault_manager").joinpath("static", "assets", name)
+    else:
+        content_type = "text/html"
+        resource = files("password_vault_manager").joinpath("static", "index.html")
+    try:
+        body = resource.read_bytes()
+    except FileNotFoundError:
+        return error(404, "Asset not found")
     return HttpResponse(body, content_type=content_type + "; charset=utf-8")
 
 
